@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Zako A.i - Công cụ game</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background: #0b0e14;
+            color: #e0e0e0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #1a1f2b, #0d1117);
+            padding: 14px 24px;
+            border-bottom: 2px solid #2a3a4a;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.6);
+        }
+        .header .logo {
+            font-size: 24px;
+            font-weight: 800;
+            background: linear-gradient(90deg, #f0c040, #ff7f50);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 1px;
+        }
+        .header .logo i {
+            -webkit-text-fill-color: initial;
+            color: #f0c040;
+            margin-right: 8px;
+        }
+        .header .badge {
+            background: #2a3a4a;
+            padding: 4px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            border: 1px solid #4a6a8a;
+            color: #b0d0f0;
+        }
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+        .chat-header {
+            padding: 10px 24px;
+            background: #141a22;
+            border-bottom: 1px solid #2a3a4a;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-shrink: 0;
+        }
+        .chat-header .ai-label {
+            font-size: 18px;
+            font-weight: 700;
+            color: #f0c040;
+            text-shadow: 0 0 10px rgba(240,192,64,0.3);
+            letter-spacing: 0.5px;
+        }
+        .chat-header .ai-label i {
+            margin-right: 8px;
+            color: #ff7f50;
+        }
+        .chat-header .status {
+            font-size: 13px;
+            color: #8aa;
+            margin-left: auto;
+            background: #1e2a36;
+            padding: 2px 12px;
+            border-radius: 12px;
+            border: 1px solid #3a5a6a;
+        }
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            background: #0f141c;
+            scroll-behavior: smooth;
+        }
+        .messages::-webkit-scrollbar {
+            width: 6px;
+        }
+        .messages::-webkit-scrollbar-track {
+            background: #1a2028;
+        }
+        .messages::-webkit-scrollbar-thumb {
+            background: #3a5a6a;
+            border-radius: 4px;
+        }
+        .msg {
+            max-width: 85%;
+            padding: 12px 18px;
+            border-radius: 18px;
+            line-height: 1.6;
+            word-wrap: break-word;
+            animation: fadeIn 0.3s ease;
+            position: relative;
+        }
+        .msg.user {
+            align-self: flex-end;
+            background: linear-gradient(135deg, #1e3a5a, #0f2838);
+            border: 1px solid #2a5a7a;
+            color: #d0e8ff;
+            border-bottom-right-radius: 4px;
+        }
+        .msg.bot {
+            align-self: flex-start;
+            background: #1a222e;
+            border: 1px solid #2a3a4a;
+            border-bottom-left-radius: 4px;
+            color: #e8e8e8;
+        }
+        .msg .msg-time {
+            font-size: 11px;
+            color: #6a8a9a;
+            margin-top: 6px;
+            text-align: right;
+            opacity: 0.7;
+        }
+        .msg .copy-btn {
+            position: absolute;
+            top: 8px;
+            right: 10px;
+            background: transparent;
+            border: none;
+            color: #8ab;
+            cursor: pointer;
+            font-size: 14px;
+            display: none;
+        }
+        .msg.bot .copy-btn {
+            display: block;
+        }
+        .msg.bot .copy-btn:hover {
+            color: #f0c040;
+        }
+        .msg pre {
+            background: #0d1117;
+            padding: 12px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 8px 0;
+            border-left: 4px solid #f0c040;
+            font-size: 14px;
+            font-family: 'Courier New', monospace;
+        }
+        .msg code {
+            font-family: 'Courier New', monospace;
+            background: #0d1117;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .input-area {
+            background: #141a22;
+            padding: 16px 24px;
+            border-top: 1px solid #2a3a4a;
+            display: flex;
+            gap: 12px;
+            flex-shrink: 0;
+            align-items: center;
+        }
+        .input-area textarea {
+            flex: 1;
+            background: #1e2632;
+            border: 1px solid #2a3a4a;
+            border-radius: 24px;
+            padding: 12px 20px;
+            color: #e0e0e0;
+            font-size: 15px;
+            resize: none;
+            outline: none;
+            transition: border 0.2s;
+            min-height: 50px;
+            max-height: 120px;
+            font-family: inherit;
+        }
+        .input-area textarea:focus {
+            border-color: #f0c040;
+            box-shadow: 0 0 12px rgba(240,192,64,0.15);
+        }
+        .input-area button {
+            background: linear-gradient(135deg, #f0c040, #e09e30);
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 22px;
+            color: #1a1f2b;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            box-shadow: 0 0 20px rgba(240,192,64,0.2);
+        }
+        .input-area button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(240,192,64,0.4);
+        }
+        .input-area button:active {
+            transform: scale(0.95);
+        }
+        @media (max-width: 600px) {
+            .header .logo { font-size: 18px; }
+            .header .badge { font-size: 11px; padding: 2px 12px; }
+            .chat-header .ai-label { font-size: 15px; }
+            .messages { padding: 12px; }
+            .msg { max-width: 92%; padding: 10px 14px; }
+            .input-area { padding: 12px; gap: 8px; }
+            .input-area textarea { font-size: 14px; padding: 10px 16px; min-height: 44px; }
+            .input-area button { width: 44px; height: 44px; font-size: 18px; }
+        }
+        .typing {
+            align-self: flex-start;
+            background: #1a222e;
+            border: 1px solid #2a3a4a;
+            border-radius: 18px;
+            padding: 12px 20px;
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+        .typing span {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #8ab;
+            border-radius: 50%;
+            animation: typingBounce 1.2s infinite ease-in-out;
+        }
+        .typing span:nth-child(2) { animation-delay: 0.2s; }
+        .typing span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes typingBounce {
+            0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+            30% { transform: translateY(-8px); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="logo"><i class="fas fa-robot"></i> Zako A.i</div>
+        <div class="badge"><i class="fas fa-gamepad"></i> Công cụ game</div>
+    </header>
+
+    <div class="chat-container">
+        <div class="chat-header">
+            <div class="ai-label"><i class="fas fa-brain"></i> Zako A.i V1 Pro New</div>
+            <span class="status"><i class="fas fa-circle" style="color: #5f5; font-size: 10px;"></i> Online</span>
+        </div>
+        <div class="messages" id="messages">
+            <div class="msg bot">
+                👋 Chào bạn! Tôi là Zako A.i, trợ lý AI dành cho game thủ và coder. Hỏi tôi bất cứ điều gì về code, game, Roblox, Minecraft, Anime Game... Tôi sẵn sàng giúp đỡ!
+                <div class="msg-time">Vừa xong</div>
+            </div>
+        </div>
+        <div class="input-area">
+            <textarea id="inputBox" rows="1" placeholder="Nhập câu hỏi hoặc yêu cầu code..."></textarea>
+            <button id="sendBtn"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const messages = document.getElementById('messages');
+            const inputBox = document.getElementById('inputBox');
+            const sendBtn = document.getElementById('sendBtn');
+
+            function addMessage(text, sender) {
+                const div = document.createElement('div');
+                div.className = 'msg ' + sender;
+                let content = text;
+                const codeRegex = /```(\w*)\n([\s\S]*?)```/g;
+                let parts = [];
+                let lastIndex = 0;
+                let match;
+                let hasCode = false;
+                while ((match = codeRegex.exec(content)) !== null) {
+                    hasCode = true;
+                    if (match.index > lastIndex) {
+                        parts.push(content.substring(lastIndex, match.index));
+                    }
+                    const code = match[2];
+                    parts.push(`<pre><code>${escapeHtml(code)}</code></pre>`);
+                    lastIndex = codeRegex.lastIndex;
+                }
+                if (lastIndex < content.length) {
+                    parts.push(content.substring(lastIndex));
+                }
+                let finalHtml = parts.join('');
+                if (!hasCode) {
+                    finalHtml = escapeHtml(content).replace(/\n/g, '<br>');
+                }
+
+                let copyBtnHtml = '';
+                if (sender === 'bot') {
+                    copyBtnHtml = `<button class="copy-btn" onclick="copyMessage(this)"><i class="fas fa-copy"></i></button>`;
+                }
+
+                div.innerHTML = finalHtml + copyBtnHtml + `<div class="msg-time">${getTime()}</div>`;
+                messages.appendChild(div);
+                messages.scrollTop = messages.scrollHeight;
+            }
+
+            function escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
+            function getTime() {
+                const now = new Date();
+                return now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+            }
+
+            window.copyMessage = function(btn) {
+                const msgDiv = btn.closest('.msg');
+                const pre = msgDiv.querySelector('pre');
+                let text = '';
+                if (pre) {
+                    text = pre.textContent;
+                } else {
+                    const clone = msgDiv.cloneNode(true);
+                    clone.querySelector('.msg-time')?.remove();
+                    clone.querySelector('.copy-btn')?.remove();
+                    text = clone.textContent.trim();
+                }
+                navigator.clipboard.writeText(text).then(() => {
+                    btn.innerHTML = '<i class="fas fa-check"></i>';
+                    setTimeout(() => btn.innerHTML = '<i class="fas fa-copy"></i>', 1500);
+                }).catch(() => {});
+            };
+
+            function showTyping() {
+                const div = document.createElement('div');
+                div.className = 'typing';
+                div.id = 'typingIndicator';
+                div.innerHTML = '<span></span><span></span><span></span>';
+                messages.appendChild(div);
+                messages.scrollTop = messages.scrollHeight;
+            }
+
+            function hideTyping() {
+                const el = document.getElementById('typingIndicator');
+                if (el) el.remove();
+            }
+
+            function sendMessage() {
+                const text = inputBox.value.trim();
+                if (!text) return;
+                addMessage(text, 'user');
+                inputBox.value = '';
+                inputBox.style.height = 'auto';
+                showTyping();
+                const delay = 800 + Math.random() * 1200;
+                setTimeout(() => {
+                    hideTyping();
+                    const reply = getAIResponse(text);
+                    addMessage(reply, 'bot');
+                }, delay);
+            }
+
+            function getAIResponse(input) {
+                const lower = input.toLowerCase();
+                if (lower.includes('roblox') || lower.includes('luau')) {
+                    if (lower.includes('script') || lower.includes('code')) {
+                        return `🎮 **Roblox Luau Script**\n\nBạn cần một script bay cho nhân vật? Đây là đoạn code mẫu:\n\n\`\`\`lua\nlocal UIS = game:GetService("UserInputService")\nlocal char = game.Players.LocalPlayer.Character\nlocal root = char and char:FindFirstChild("HumanoidRootPart")\nif root then\n    root.Velocity = Vector3.new(0, 50, 0)\nend\n\`\`\`\n\nBạn có thể điều chỉnh vận tốc. Cần thêm chi tiết không?`;
+                    } else {
+                        return `🎮 **Roblox** - Tôi có thể hướng dẫn bạn về Studio, scripting, game mechanics. Bạn muốn biết cụ thể về gì? (Nhập "roblox script" để xem ví dụ)`;
+                    }
+                }
+                else if (lower.includes('minecraft')) {
+                    return `⛏️ **Minecraft**\n\nTôi hỗ trợ command, datapack, resource pack. Ví dụ command để tạo một khối kim cương:\n\`\`\`\n/give @p diamond_block 64\n\`\`\`\nBạn cần hỗ trợ gì thêm?`;
+                }
+                else if (lower.includes('anime') || lower.includes('game anime')) {
+                    return `⚔️ **Anime Game**\n\nBạn muốn tìm hiểu về nhân vật, kỹ năng hay gameplay của game nào? Ví dụ: Naruto, One Piece, Demon Slayer... Hãy nêu tên game cụ thể.`;
+                }
+                else if (lower.includes('html') || lower.includes('css') || lower.includes('javascript') || lower.includes('web')) {
+                    return `🌐 **Web Development**\n\nTôi có thể giúp bạn viết HTML, CSS, JS. Ví dụ một trang đơn giản:\n\`\`\`html\n<!DOCTYPE html>\n<html>\n<head><title>Trang của tôi</title></head>\n<body><h1>Hello World!</h1></body>\n</html>\n\`\`\`\nBạn cần gì khác?`;
+                }
+                else if (lower.includes('python')) {
+                    return `🐍 **Python**\n\nVí dụ code Python in ra số chẵn:\n\`\`\`python\nfor i in range(10):\n    if i % 2 == 0:\n        print(i)\n\`\`\`\nCần giải thích hay sửa lỗi?`;
+                }
+                else if (lower.includes('java')) {
+                    return `☕ **Java**\n\nVí dụ chương trình Hello World:\n\`\`\`java\npublic class Hello {\n    public static void main(String[] args) {\n        System.out.println("Hello, World!");\n    }\n}\n\`\`\``;
+                }
+                else if (lower.includes('c++') || lower.includes('c ')) {
+                    return `⚙️ **C/C++**\n\nVí dụ C++ in số:\n\`\`\`cpp\n#include <iostream>\nusing namespace std;\nint main() {\n    cout << "Hello";\n    return 0;\n}\n\`\`\``;
+                }
+                else if (lower.includes('game hot') || lower.includes('game đang hot')) {
+                    return `🔥 **Game đang hot**\n\nMột số tựa game nổi bật hiện nay:\n- Valorant\n- Roblox (luôn hot)\n- Minecraft\n- Genshin Impact\n- League of Legends\n- PUBG Mobile\nBạn quan tâm game nào?`;
+                }
+                else if (lower.includes('xin chào') || lower.includes('hello') || lower.includes('hi')) {
+                    return `Xin chào! Tôi là Zako A.i, sẵn sàng đồng hành cùng bạn. Hỏi gì đi nào!`;
+                }
+                else if (lower.includes('cảm ơn') || lower.includes('thanks')) {
+                    return `Không có gì! Luôn sẵn sàng giúp bạn. 😊`;
+                }
+                else if (lower.includes('lỗi') || lower.includes('bug') || lower.includes('sửa lỗi')) {
+                    return `🔧 **Sửa lỗi**\n\nVui lòng gửi code của bạn, tôi sẽ phân tích và đề xuất cách sửa. Bạn có thể paste code vào đây.`;
+                }
+                else if (lower.includes('giải thích code')) {
+                    return `📚 **Giải thích code**\n\nHãy gửi đoạn code bạn muốn giải thích, tôi sẽ phân tích từng dòng một cách dễ hiểu.`;
+                }
+                else {
+                    return `🤖 Tôi nhận được câu hỏi của bạn. Hãy nói rõ hơn về chủ đề (code, game, Roblox, Minecraft, Anime, web, Python, Java, C++...) để tôi hỗ trợ tốt nhất. Bạn có thể hỏi về bất kỳ lĩnh vực nào trong danh sách của tôi.`;
+                }
+            }
+
+            sendBtn.addEventListener('click', sendMessage);
+            inputBox.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+            inputBox.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+            });
+            window.addEventListener('load', function() {
+                inputBox.focus();
+            });
+        })();
+    </script>
+</body>
+      </html>
